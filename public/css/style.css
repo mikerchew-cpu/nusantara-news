@@ -1101,6 +1101,14 @@ input, select { font-family: inherit; }
   margin-left: 4px;
 }
 
+/* ── US Markets Section ── */
+
+.usm-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 20px;
+}
+
 /* ── AI News Section ── */
 
 .ai-section {
@@ -1319,6 +1327,9 @@ input, select { font-family: inherit; }
   .card-desc { font-size: 13px; -webkit-line-clamp: 2; }
   .card-bottom { padding-top: 8px; }
   .btn-analyze { padding: 7px 14px; font-size: 11px; min-height: 34px; }
+
+  /* US Markets mobile */
+  .usm-section { grid-template-columns: 1fr; gap: 14px; }
 
   /* Commodities Detail */
   .commodities-detail {

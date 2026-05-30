@@ -343,6 +343,71 @@ app.get('/api/commodities-detail', (_, res) => {
   });
 });
 
+app.get('/api/us-markets', (_, res) => {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' });
+  res.json({
+    lastUpdated: `${dateStr} · ${timeStr} ET`,
+    equities: {
+      title: 'Equity Indices',
+      subtitle: 'US stock market benchmarks',
+      ref: 'finance.yahoo.com · marketwatch.com',
+      items: [
+        { grade: 'S&P 500', spec: 'SPX', price: '7,580.06', unit: 'points', change: '+16.43', changePct: '+0.22%', ref: 'Record close' },
+        { grade: 'Dow Jones', spec: 'DJI', price: '51,032.46', unit: 'points', change: '+363.49', changePct: '+0.72%' },
+        { grade: 'Nasdaq Composite', spec: 'IXIC', price: '26,972.62', unit: 'points', change: '+55.15', changePct: '+0.20%' },
+        { grade: 'VIX', spec: 'VIX', price: '15.32', unit: 'points', change: '-0.42', changePct: '-2.67%' },
+      ],
+    },
+    rates: {
+      title: 'Interest Rates',
+      subtitle: 'Treasury & central bank rates',
+      ref: 'federalreserve.gov · treasury.gov',
+      items: [
+        { grade: 'Fed Funds Rate', spec: 'Target', price: '4.25–4.50%', unit: '', change: '—', changePct: 'Held since Dec 2024' },
+        { grade: '10-Year Treasury', spec: 'US10Y', price: '4.45%', unit: '', change: '-0.03', changePct: '-0.67%', ref: '28 May 2026' },
+        { grade: '2-Year Treasury', spec: 'US2Y', price: '4.12%', unit: '', change: '-0.02', changePct: '-0.48%' },
+        { grade: '30-Year Treasury', spec: 'US30Y', price: '4.98%', unit: '', change: '-0.01', changePct: '-0.20%' },
+        { grade: 'Prime Rate', spec: 'USPRIME', price: '7.50%', unit: '', change: '—', changePct: 'Linked to Fed rate' },
+      ],
+    },
+    inflation: {
+      title: 'Inflation',
+      subtitle: 'Consumer & producer prices',
+      ref: 'bls.gov · bea.gov',
+      items: [
+        { grade: 'CPI YoY', spec: 'Apr 2026', price: '3.8%', unit: '', change: '+0.5', changePct: '+0.5pp from Mar' },
+        { grade: 'Core CPI', spec: 'Apr 2026', price: '2.8%', unit: '', change: '—', changePct: 'Ex food & energy' },
+        { grade: 'PCE Price Index', spec: 'Q1 2026 annualized', price: '4.5%', unit: '', change: '+1.6', changePct: '+1.6pp from Q4 2025' },
+        { grade: 'Core PCE', spec: 'Q1 2026 annualized', price: '4.4%', unit: '', change: '+1.7', changePct: '+1.7pp from Q4 2025' },
+      ],
+    },
+    labor: {
+      title: 'Labor Market',
+      subtitle: 'Employment indicators',
+      ref: 'bls.gov · chicagofed.org',
+      items: [
+        { grade: 'Unemployment Rate', spec: 'Apr 2026', price: '4.3%', unit: '', change: '—', changePct: 'Unchanged from Mar' },
+        { grade: 'Nonfarm Payrolls', spec: 'Apr 2026', price: '+115,000', unit: 'jobs', change: '+115k', changePct: 'Edged up' },
+        { grade: 'U-6 Underemployment', spec: 'Apr 2026', price: '8.2%', unit: '', change: '+0.2', changePct: '+0.2pp from Mar' },
+        { grade: 'Labor Force Part.', spec: 'Apr 2026', price: '62.5%', unit: '', change: '—', changePct: 'Stable' },
+      ],
+    },
+    gdp: {
+      title: 'Gross Domestic Product',
+      subtitle: 'Real GDP (SAAR)',
+      ref: 'bea.gov · tradingeconomics.com',
+      items: [
+        { grade: 'Real GDP', spec: 'Q1 2026 (2nd est.)', price: '1.6%', unit: 'annualized', change: '-0.4', changePct: 'Revised down from 2.0%' },
+        { grade: 'Consumer Spending', spec: 'Q1 2026', price: '1.4%', unit: 'annualized', change: '-0.2', changePct: 'Slowed from Q4' },
+        { grade: 'Business Investment', spec: 'Q1 2026', price: '10.4%', unit: 'annualized', change: '—', changePct: 'AI-driven capex' },
+        { grade: 'Corporate Profits', spec: 'Q1 2026', price: '+$40.4B', unit: '', change: '-$206.5B', changePct: 'Sharp slowdown from Q4' },
+      ],
+    },
+  });
+});
+
 app.get('/api/diesel', (req, res) => {
   const country = req.query.country || 'all';
   const data = {

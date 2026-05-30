@@ -21,6 +21,8 @@ const aiGrid = document.getElementById('aiGrid');
 const aiLoading = document.getElementById('aiLoading');
 const aiSearch = document.getElementById('aiSearch');
 const aiSourceFilter = document.getElementById('aiSourceFilter');
+const usmSection = document.getElementById('usmSection');
+const usmTimestamp = document.getElementById('usmTimestamp');
 
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsModal = document.getElementById('settingsModal');
@@ -549,6 +551,7 @@ countryBtns.forEach(btn => {
       grid.style.display = 'none';
       loading.style.display = 'none';
       commoditiesDetail.style.display = 'none';
+      usmSection.style.display = 'none';
       aiSection.style.display = '';
       document.querySelector('.toolbar').style.display = 'none';
       document.querySelector('.ticker-bars').style.display = 'none';
@@ -556,7 +559,22 @@ countryBtns.forEach(btn => {
       return;
     }
 
-    if (currentView === 'commodities' || currentView === 'ai') {
+    if (btn.dataset.view === 'us-markets') {
+      currentView = 'us-markets';
+      countryBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      grid.style.display = 'none';
+      loading.style.display = 'none';
+      commoditiesDetail.style.display = 'none';
+      aiSection.style.display = 'none';
+      usmSection.style.display = 'grid';
+      document.querySelector('.toolbar').style.display = 'none';
+      document.querySelector('.ticker-bars').style.display = 'none';
+      loadUsMarkets();
+      return;
+    }
+
+    if (currentView === 'commodities' || currentView === 'ai' || currentView === 'us-markets') {
       currentView = 'news';
       grid.style.display = '';
       commoditiesDetail.style.display = 'none';
@@ -699,6 +717,76 @@ async function loadAiNews() {
 aiSourceFilter.addEventListener('change', loadAiNews);
 aiSearch.addEventListener('input', debounce(loadAiNews, 300));
 
+/* ── US Markets ── */
+
+async function loadUsMarkets() {
+  usmSection.innerHTML = '<div class="loading" style="display:flex;grid-column:1/-1"><div class="spinner"></div> Loading US markets data…</div>';
+  try {
+    const data = await (await fetch('/api/us-markets')).json();
+    const sections = [
+      { key: 'equities', icon: '📈' },
+      { key: 'rates', icon: '💰' },
+      { key: 'inflation', icon: '📊' },
+      { key: 'labor', icon: '👷' },
+      { key: 'gdp', icon: '🏭' },
+    ];
+
+    usmSection.innerHTML = `
+      <div class="cd-timestamp" style="grid-column:1/-1">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Data as of: ${data.lastUpdated}
+      </div>
+      ${sections.map(s => {
+      const sec = data[s.key];
+      if (!sec) return '';
+      return `
+        <div class="cd-card">
+          <div class="cd-header">
+            <div class="cd-header-text">
+              <h3>${sec.title}</h3>
+              <p>${sec.subtitle}</p>
+            </div>
+            ${sec.ref ? `<span class="cd-ref">${sec.ref}</span>` : ''}
+          </div>
+          <table class="cd-table">
+            <thead>
+              <tr>
+                <th>Indicator</th>
+                <th style="text-align:right">Value</th>
+                <th style="text-align:right">Change</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${sec.items.map(i => {
+                const isUp = !i.change.startsWith('—') && !i.change.startsWith('-0.') && i.change.startsWith('+');
+                return `
+                  <tr${i.ref ? ` title="${i.ref}"` : ''}>
+                    <td>
+                      <span class="cd-grade">${i.grade}</span><br>
+                      <span class="cd-spec">${i.spec}</span>
+                    </td>
+                    <td style="text-align:right">
+                      <span class="cd-price">${i.price}</span>
+                      ${i.unit ? `<span class="cd-unit">${i.unit}</span>` : ''}
+                    </td>
+                    <td style="text-align:right">
+                      <span class="cd-change ${isUp ? 'up' : 'dn'}">${i.change}</span>
+                      <span class="cd-change-pct">${i.changePct}</span>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }).join('')}
+    `;
+  } catch {
+    usmSection.innerHTML = '<div class="loading" style="display:flex;grid-column:1/-1">Failed to load US markets data.</div>';
+  }
+}
+
 /* ── Filter events ── */
 
 sectionFilter.addEventListener('change', () => {
@@ -714,6 +802,7 @@ refreshBtn.addEventListener('click', () => {
   loadDiesel();
   if (currentView === 'commodities') loadCommoditiesDetail();
   else if (currentView === 'ai') loadAiNews();
+  else if (currentView === 'us-markets') loadUsMarkets();
   else load();
 });
 
@@ -745,5 +834,6 @@ load();
 setInterval(() => {
   if (currentView === 'commodities') loadCommoditiesDetail();
   else if (currentView === 'ai') loadAiNews();
+  else if (currentView === 'us-markets') loadUsMarkets();
   else load();
 }, 5 * 60 * 1000);
