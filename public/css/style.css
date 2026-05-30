@@ -40,6 +40,24 @@ body {
   line-height: 1.5;
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .card:hover { transform: none; box-shadow: none; border-color: var(--line-light); }
+  .card:hover::before { opacity: 0; }
+  .btn:hover { transform: none; }
+  .btn-primary:hover { background: var(--blue); }
+  .btn-secondary:hover { border-color: var(--line); color: var(--ink); }
+  .btn-analyze:hover { transform: none; box-shadow: none; background: var(--red); }
+  .commodity-item:hover { border-color: var(--line-light); box-shadow: none; }
+  .diesel-item:hover { box-shadow: none; }
+  .cd-card:hover { box-shadow: none; border-color: var(--line-light); }
+  .cd-table tr:hover td { background: transparent; }
+  .ql-btn:hover { border-color: var(--line); color: var(--muted); background: var(--panel); }
+  .nav-btn:hover { color: var(--muted); }
+  .provider-card:hover { border-color: var(--line-light); color: var(--muted); }
 }
 
 a { color: inherit; text-decoration: none; }
@@ -1228,21 +1246,22 @@ input, select { font-family: inherit; }
     --radius-sm: 7px;
   }
 
-  /* Header */
-  .header-inner { padding: 10px 14px; gap: 10px; }
-  .brand { gap: 10px; }
-  .brand-mark { width: 34px; height: 34px; border-radius: 8px; }
-  .brand-mark svg { width: 16px; height: 16px; }
-  .brand-name { font-size: 16px; letter-spacing: -0.3px; }
+  /* Header — compact */
+  .header-inner { padding: 8px 12px; gap: 8px; }
+  .brand { gap: 8px; }
+  .brand-logo { height: 48px; }
+  .brand-name { font-size: 15px; letter-spacing: -0.3px; }
+  .brand-powered { font-size: 7px; letter-spacing: 1.5px; }
   .brand-tagline { display: none; }
   .fetch-time { display: none; }
-  .header-right { gap: 6px; }
-  .btn-icon { padding: 8px; min-width: 36px; min-height: 36px; }
+  .header-right { gap: 4px; }
+  .btn-icon { padding: 6px; min-width: 36px; min-height: 36px; }
+  .btn-icon svg { width: 16px; height: 16px; }
 
-  /* Nav */
-  .nav { top: 54px; }
+  /* Nav — scrollable tabs */
+  .nav { top: 48px; }
   .nav-inner {
-    padding: 0 14px;
+    padding: 0 10px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -1250,23 +1269,25 @@ input, select { font-family: inherit; }
   }
   .nav-inner::-webkit-scrollbar { display: none; }
   .nav-btn {
-    padding: 11px 14px;
-    font-size: 12px;
+    padding: 10px 10px;
+    font-size: 11px;
     white-space: nowrap;
-    min-height: 44px;
+    min-height: 40px;
+    flex-shrink: 0;
   }
+  .nav-commodities, .nav-ai, .nav-usm { font-size: 11px !important; }
   .nav-divider { display: none; }
-  .nav-commodities { font-size: 12px; }
 
-  /* Toolbar */
-  .toolbar { padding: 12px 14px 0; }
+  /* Toolbar — compact */
+  .toolbar { padding: 10px 12px 0; }
   .toolbar-row {
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
+    gap: 8px;
   }
   .toolbar-row.secondary {
-    padding-bottom: 12px;
+    padding-bottom: 10px;
+    margin-bottom: 0;
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
@@ -1284,7 +1305,7 @@ input, select { font-family: inherit; }
     min-height: 40px;
   }
 
-  .search-group { gap: 8px; }
+  .search-group { gap: 6px; }
   .search-wrap { flex: 1; }
   .search-wrap input {
     width: 100%;
@@ -1293,18 +1314,18 @@ input, select { font-family: inherit; }
     min-height: 40px;
   }
   .search-wrap input:focus { width: 100%; }
-  .count { font-size: 12px; padding: 4px 8px; }
+  .count { font-size: 11px; padding: 3px 7px; }
 
-  .quick-links { flex-wrap: nowrap; gap: 6px; }
+  .quick-links { flex-wrap: nowrap; gap: 4px; }
   .ql-btn {
-    padding: 6px 12px;
-    font-size: 11px;
-    min-height: 32px;
+    padding: 5px 10px;
+    font-size: 10px;
+    min-height: 30px;
     white-space: nowrap;
   }
 
   /* Ticker Bars */
-  .ticker-bars { padding: 10px 14px 2px; }
+  .ticker-bars { padding: 8px 12px 0; }
   .commodity-bar, .diesel-bar {
     flex-direction: column;
     align-items: flex-start;
@@ -1316,17 +1337,20 @@ input, select { font-family: inherit; }
   .diesel-grid { gap: 6px; }
   .diesel-item { font-size: 11px; padding: 4px 10px; }
 
-  /* News Grid */
-  .main { padding: 12px 14px 32px; }
+  /* News Grid — tighter cards */
+  .main { padding: 10px 12px 24px; }
   .grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
   }
-  .card { padding: 16px; gap: 8px; }
-  .card-title { font-size: 15px; line-height: 1.3; }
-  .card-desc { font-size: 13px; -webkit-line-clamp: 2; }
-  .card-bottom { padding-top: 8px; }
-  .btn-analyze { padding: 7px 14px; font-size: 11px; min-height: 34px; }
+  .card { padding: 12px; gap: 6px; }
+  .card-title { font-size: 14px; line-height: 1.3; }
+  .card-desc { font-size: 12px; -webkit-line-clamp: 2; }
+  .card-source { font-size: 10px; }
+  .card-category { font-size: 9px; padding: 2px 8px; }
+  .card-bottom { padding-top: 6px; margin-top: 2px; }
+  .card-time { font-size: 11px; }
+  .btn-analyze { padding: 6px 12px; font-size: 10px; min-height: 30px; }
 
   /* US Markets mobile */
   .usm-section { grid-template-columns: 1fr; gap: 14px; }
@@ -1431,25 +1455,35 @@ input, select { font-family: inherit; }
   .ai-header select { width: 100%; }
   .ai-section .grid { grid-template-columns: 1fr; gap: 12px; }
 
-  /* Touch targets — ensure minimum 44px */
-  button, a, select, input[type="search"] {
-    min-height: 44px;
+  /* Prevent iOS text size adjust on orientation change */
+  body { -webkit-text-size-adjust: 100%; }
+
+  /* Smooth scrollable areas */
+  .nav-inner, .toolbar-row.secondary, .quick-links, .commodity-ticker {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
+
+  /* Ticker items more tappable on mobile */
+  .commodity-item { cursor: default; }
+
+  /* Compact nav btn SVGs */
+  .nav-btn svg { width: 12px; height: 12px; vertical-align: -1px; }
 }
 
 /* ── Small Mobile (≤ 380px) ── */
 
 @media (max-width: 380px) {
-  .header-inner { padding: 8px 10px; }
-  .brand-mark { width: 30px; height: 30px; }
-  .brand-mark svg { width: 14px; height: 14px; }
-  .brand-name { font-size: 14px; }
+  .header-inner { padding: 6px 8px; gap: 6px; }
+  .brand-logo { height: 40px; }
+  .brand-name { font-size: 13px; }
+  .brand-powered { display: none; }
 
-  .nav-btn { padding: 10px 12px; font-size: 11px; }
+  .nav-btn { padding: 8px 8px; font-size: 10px; min-height: 36px; }
 
-  .card { padding: 14px; }
-  .card-title { font-size: 14px; }
-  .card-desc { font-size: 12px; }
+  .card { padding: 10px; }
+  .card-title { font-size: 13px; }
+  .card-desc { font-size: 11px; -webkit-line-clamp: 1; }
 
   .analysis-cards { grid-template-columns: 1fr; }
   .provider-cards { flex-direction: column; }
