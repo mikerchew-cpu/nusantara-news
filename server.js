@@ -30,6 +30,12 @@ const FEEDS = {
   ],
 };
 
+const SARAWAK_FEEDS = [
+  { url: 'https://www.theborneopost.com/feed/', name: 'Borneo Post' },
+  { url: 'https://dayakdaily.com/feed/', name: 'DayakDaily' },
+  { url: 'https://www.sarawakreport.org/feed/', name: 'Sarawak Report' },
+];
+
 const AI_FEEDS = [
   { url: 'https://www.technologyreview.com/feed/', name: 'MIT Tech Review' },
   { url: 'https://techcrunch.com/category/artificial-intelligence/feed/', name: 'TechCrunch AI' },
@@ -232,6 +238,50 @@ app.get('/api/ai-news', async (req, res) => {
 app.get('/api/ai-sources', async (_, res) => {
   await ensureAiCache();
   res.json(AI_FEEDS.map(f => f.name));
+});
+
+/* ── Sarawak News ── */
+
+let sarawakCache = { articles: [], lastFetch: null };
+let sarawakFetchPromise = null;
+
+async function fetchSarawakNews() {
+  if (sarawakFetchPromise) return sarawakFetchPromise;
+  sarawakFetchPromise = (async () => {
+    const tasks = SARAWAK_FEEDS.map(feedDef => feedToItems(feedDef, 20));
+    const results = await Promise.allSettled(tasks);
+    const all = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+    const deduped = dedupeAndSort(all, item => item.title.toLowerCase().slice(0, 80));
+    sarawakCache = { articles: deduped.slice(0, 100), lastFetch: new Date().toISOString() };
+    console.log(`Fetched ${sarawakCache.articles.length} Sarawak articles from ${SARAWAK_FEEDS.length} feeds`);
+  })();
+  try { await sarawakFetchPromise; } finally { sarawakFetchPromise = null; }
+}
+
+async function ensureSarawakCache() {
+  if (sarawakCache.articles.length === 0) await fetchSarawakNews();
+}
+
+app.get('/api/sarawak-news', async (req, res) => {
+  await ensureSarawakCache();
+  const { source, q } = req.query;
+  let result = sarawakCache.articles;
+  if (source && source !== 'all') result = result.filter(a => a.source === source);
+  if (q) {
+    const query = q.toLowerCase();
+    result = result.filter(a => a.title.toLowerCase().includes(query) || a.description.toLowerCase().includes(query));
+  }
+  res.json({
+    articles: result,
+    total: sarawakCache.articles.length,
+    filtered: result.length,
+    lastFetch: sarawakCache.lastFetch,
+  });
+});
+
+app.get('/api/sarawak-sources', async (_, res) => {
+  await ensureSarawakCache();
+  res.json(SARAWAK_FEEDS.map(f => f.name));
 });
 
 app.get('/api/sources', async (_, res) => {
@@ -605,9 +655,10 @@ app.get('*', async (_, res) => {
 });
 
 async function start() {
-  await Promise.all([fetchAll(), fetchAiNews()]);
+  await Promise.all([fetchAll(), fetchAiNews(), fetchSarawakNews()]);
   setInterval(fetchAll, 15 * 60 * 1000);
   setInterval(fetchAiNews, 15 * 60 * 1000);
+  setInterval(fetchSarawakNews, 15 * 60 * 1000);
   app.listen(PORT, () => console.log(`Nusantara → http://localhost:${PORT}`));
 }
 

@@ -965,12 +965,12 @@ input, select { font-family: inherit; }
   align-self: center;
 }
 
-.nav-commodities, .nav-ai {
+.nav-commodities, .nav-ai, .nav-usm, .nav-swk {
   color: var(--blue) !important;
   font-weight: 700 !important;
 }
 
-.nav-commodities svg, .nav-ai svg { vertical-align: -2px; }
+.nav-commodities svg, .nav-ai svg, .nav-usm svg, .nav-swk svg { vertical-align: -2px; }
 
 /* ── Commodities Detail ── */
 
@@ -1275,7 +1275,7 @@ input, select { font-family: inherit; }
     min-height: 40px;
     flex-shrink: 0;
   }
-  .nav-commodities, .nav-ai, .nav-usm { font-size: 11px !important; }
+  .nav-commodities, .nav-ai, .nav-usm, .nav-swk { font-size: 11px !important; }
   .nav-divider { display: none; }
 
   /* Toolbar — compact */

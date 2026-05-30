@@ -23,6 +23,11 @@ const aiSearch = document.getElementById('aiSearch');
 const aiSourceFilter = document.getElementById('aiSourceFilter');
 const usmSection = document.getElementById('usmSection');
 const usmTimestamp = document.getElementById('usmTimestamp');
+const sarawakSection = document.getElementById('sarawakSection');
+const sarawakGrid = document.getElementById('sarawakGrid');
+const sarawakLoading = document.getElementById('sarawakLoading');
+const sarawakSearch = document.getElementById('sarawakSearch');
+const sarawakSourceFilter = document.getElementById('sarawakSourceFilter');
 
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsModal = document.getElementById('settingsModal');
@@ -567,6 +572,7 @@ countryBtns.forEach(btn => {
       loading.style.display = 'none';
       commoditiesDetail.style.display = 'none';
       aiSection.style.display = 'none';
+      sarawakSection.style.display = 'none';
       usmSection.style.display = 'grid';
       document.querySelector('.toolbar').style.display = 'none';
       document.querySelector('.ticker-bars').style.display = 'none';
@@ -574,11 +580,28 @@ countryBtns.forEach(btn => {
       return;
     }
 
-    if (currentView === 'commodities' || currentView === 'ai' || currentView === 'us-markets') {
+    if (btn.dataset.view === 'sarawak') {
+      currentView = 'sarawak';
+      countryBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      grid.style.display = 'none';
+      loading.style.display = 'none';
+      commoditiesDetail.style.display = 'none';
+      aiSection.style.display = 'none';
+      usmSection.style.display = 'none';
+      sarawakSection.style.display = '';
+      document.querySelector('.toolbar').style.display = 'none';
+      document.querySelector('.ticker-bars').style.display = 'none';
+      loadSarawakNews();
+      return;
+    }
+
+    if (currentView === 'commodities' || currentView === 'ai' || currentView === 'us-markets' || currentView === 'sarawak') {
       currentView = 'news';
       grid.style.display = '';
       commoditiesDetail.style.display = 'none';
       aiSection.style.display = 'none';
+      sarawakSection.style.display = 'none';
       document.querySelector('.toolbar').style.display = '';
       document.querySelector('.ticker-bars').style.display = '';
     }
@@ -717,6 +740,57 @@ async function loadAiNews() {
 aiSourceFilter.addEventListener('change', loadAiNews);
 aiSearch.addEventListener('input', debounce(loadAiNews, 300));
 
+/* ── Sarawak News ── */
+
+async function loadSarawakSources() {
+  try {
+    const srcs = await (await fetch('/api/sarawak-sources')).json();
+    sarawakSourceFilter.innerHTML = '<option value="all">All Sources</option>' + srcs.map(s => `<option value="${s}">${s}</option>`).join('');
+  } catch {}
+}
+
+async function loadSarawakNews() {
+  sarawakLoading.style.display = 'flex';
+  sarawakGrid.innerHTML = '';
+  try {
+    const params = new URLSearchParams();
+    if (sarawakSourceFilter.value !== 'all') params.set('source', sarawakSourceFilter.value);
+    if (sarawakSearch.value) params.set('q', sarawakSearch.value);
+    const res = await fetch(`/api/sarawak-news?${params}`);
+    const data = await res.json();
+    const articles = data.articles;
+    sarawakLoading.style.display = 'none';
+
+    if (articles.length === 0) {
+      sarawakGrid.innerHTML = '<div class="loading" style="display:flex;grid-column:1/-1">No Sarawak articles match your filters.</div>';
+      return;
+    }
+
+    sarawakGrid.innerHTML = articles.map(item => `
+      <div class="card">
+        <div class="card-top">
+          <span class="card-source">${item.source}</span>
+        </div>
+        <span class="card-category">Sarawak</span>
+        <h2 class="card-title">
+          <a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
+        </h2>
+        <p class="card-desc">${item.description || ''}</p>
+        <div class="card-bottom">
+          <span class="card-time">${timeAgo(item.pubDate)}</span>
+          <span style="color:var(--muted-light);font-size:11px">${item.source}</span>
+        </div>
+      </div>
+    `).join('');
+  } catch {
+    sarawakLoading.style.display = 'none';
+    sarawakGrid.innerHTML = '<div class="loading" style="display:flex;grid-column:1/-1">Failed to load Sarawak news.</div>';
+  }
+}
+
+sarawakSourceFilter.addEventListener('change', loadSarawakNews);
+sarawakSearch.addEventListener('input', debounce(loadSarawakNews, 300));
+
 /* ── US Markets ── */
 
 async function loadUsMarkets() {
@@ -803,6 +877,7 @@ refreshBtn.addEventListener('click', () => {
   if (currentView === 'commodities') loadCommoditiesDetail();
   else if (currentView === 'ai') loadAiNews();
   else if (currentView === 'us-markets') loadUsMarkets();
+  else if (currentView === 'sarawak') loadSarawakNews();
   else load();
 });
 
@@ -828,6 +903,7 @@ updateAiStatus();
 refreshProviderDots();
 loadFilters();
 loadAiSources();
+loadSarawakSources();
 loadCommodities();
 loadDiesel();
 load();
@@ -835,5 +911,6 @@ setInterval(() => {
   if (currentView === 'commodities') loadCommoditiesDetail();
   else if (currentView === 'ai') loadAiNews();
   else if (currentView === 'us-markets') loadUsMarkets();
+  else if (currentView === 'sarawak') loadSarawakNews();
   else load();
 }, 5 * 60 * 1000);

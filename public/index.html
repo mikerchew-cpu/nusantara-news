@@ -60,6 +60,10 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         US Markets
       </button>
+      <button class="nav-btn nav-swk" data-view="sarawak">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Sarawak
+      </button>
     </div>
   </nav>
 
@@ -132,6 +136,26 @@
     <div class="commodities-detail" id="commoditiesDetail" style="display:none"></div>
     <div class="usm-section" id="usmSection" style="display:none">
       <div class="cd-timestamp" style="grid-column:1/-1" id="usmTimestamp"></div>
+    </div>
+    <div class="ai-section" id="sarawakSection" style="display:none">
+      <div class="ai-header">
+        <div>
+          <h2>Sarawak News</h2>
+          <p>The latest from Borneo Post, DayakDaily &amp; Sarawak Report</p>
+        </div>
+        <select id="sarawakSourceFilter">
+          <option value="all">All Sources</option>
+        </select>
+      </div>
+      <div class="ai-search">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="sarawakSearch" placeholder="Search Sarawak news…">
+      </div>
+      <div class="loading" id="sarawakLoading" style="display:flex">
+        <div class="spinner"></div>
+        <span>Fetching Sarawak news…</span>
+      </div>
+      <div class="grid" id="sarawakGrid"></div>
     </div>
     <div class="ai-section" id="aiSection" style="display:none">
       <div class="ai-header">
