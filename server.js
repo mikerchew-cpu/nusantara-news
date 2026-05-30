@@ -71,47 +71,59 @@ function extractImage(item) {
 let cache = { articles: [], lastFetch: null };
 let fetchPromise = null;
 
+const FEED_TIMEOUT = 10000;
+
+async function fetchFeed(feedDef, country, maxItems) {
+  try {
+    const feed = await Promise.race([
+      parser.parseURL(feedDef.url),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), FEED_TIMEOUT)),
+    ]);
+    return (feed.items || []).slice(0, maxItems).map(item => ({
+      id: item.guid || item.link || `${feedDef.name}-${Math.random().toString(36).slice(2, 8)}`,
+      title: item.title || 'Untitled',
+      link: item.link || '#',
+      description: (item.contentSnippet || item.content || '').slice(0, 300),
+      pubDate: item.pubDate || item.isoDate || new Date().toISOString(),
+      source: feedDef.name,
+      country,
+      category: categorize(item.title, item.categories),
+      image: extractImage(item),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+function dedupeAndSort(items, keyFn) {
+  const seen = new Set();
+  const deduped = [];
+  for (const item of items) {
+    const key = keyFn(item);
+    if (!seen.has(key)) {
+      seen.add(key);
+      deduped.push(item);
+    }
+  }
+  deduped.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+  return deduped;
+}
+
 async function fetchAll() {
   if (fetchPromise) return fetchPromise;
 
   fetchPromise = (async () => {
-    const all = [];
-
+    const tasks = [];
     for (const [country, feeds] of Object.entries(FEEDS)) {
       for (const feedDef of feeds) {
-        try {
-          const feed = await parser.parseURL(feedDef.url);
-          const items = (feed.items || []).slice(0, 20).map(item => ({
-            id: item.guid || item.link || `${feedDef.name}-${Math.random().toString(36).slice(2, 8)}`,
-            title: item.title || 'Untitled',
-            link: item.link || '#',
-            description: (item.contentSnippet || item.content || '').slice(0, 300),
-            pubDate: item.pubDate || item.isoDate || new Date().toISOString(),
-            source: feedDef.name,
-            country,
-            category: categorize(item.title, item.categories),
-            image: extractImage(item),
-          }));
-          all.push(...items);
-        } catch {
-          // skip unreachable feeds
-        }
+        tasks.push(fetchFeed(feedDef, country, 15));
       }
     }
-
-    const seen = new Set();
-    const deduped = [];
-    for (const item of all) {
-      const key = `${item.country}:${item.title.toLowerCase().slice(0, 80)}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        deduped.push(item);
-      }
-    }
-
-    deduped.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+    const results = await Promise.allSettled(tasks);
+    const all = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+    const deduped = dedupeAndSort(all, item => `${item.country}:${item.title.toLowerCase().slice(0, 80)}`);
     cache = { articles: deduped.slice(0, 200), lastFetch: new Date().toISOString() };
-    console.log(`Fetched ${cache.articles.length} articles`);
+    console.log(`Fetched ${cache.articles.length} articles from ${tasks.length} feeds`);
   })();
 
   try {
@@ -156,42 +168,38 @@ async function fetchAiNews() {
   if (aiFetchPromise) return aiFetchPromise;
 
   aiFetchPromise = (async () => {
-    const all = [];
-    for (const feedDef of AI_FEEDS) {
-      try {
-        const feed = await parser.parseURL(feedDef.url);
-        const items = (feed.items || []).slice(0, 20).map(item => ({
-          id: item.guid || item.link || `${feedDef.name}-${Math.random().toString(36).slice(2, 8)}`,
-          title: item.title || 'Untitled',
-          link: item.link || '#',
-          description: (item.contentSnippet || item.content || '').slice(0, 300),
-          pubDate: item.pubDate || item.isoDate || new Date().toISOString(),
-          source: feedDef.name,
-          image: extractImage(item),
-        }));
-        all.push(...items);
-      } catch {}
-    }
-
-    const seen = new Set();
-    const deduped = [];
-    for (const item of all) {
-      const key = item.title.toLowerCase().slice(0, 80);
-      if (!seen.has(key)) {
-        seen.add(key);
-        deduped.push(item);
-      }
-    }
-
-    deduped.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+    const tasks = AI_FEEDS.map(feedDef => feedToItems(feedDef, 20));
+    const results = await Promise.allSettled(tasks);
+    const all = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+    const deduped = dedupeAndSort(all, item => item.title.toLowerCase().slice(0, 80));
     aiCache = { articles: deduped.slice(0, 100), lastFetch: new Date().toISOString() };
-    console.log(`Fetched ${aiCache.articles.length} AI articles`);
+    console.log(`Fetched ${aiCache.articles.length} AI articles from ${AI_FEEDS.length} feeds`);
   })();
 
   try {
     await aiFetchPromise;
   } finally {
     aiFetchPromise = null;
+  }
+}
+
+async function feedToItems(feedDef, maxItems = 15) {
+  try {
+    const feed = await Promise.race([
+      parser.parseURL(feedDef.url),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), FEED_TIMEOUT)),
+    ]);
+    return (feed.items || []).slice(0, maxItems).map(item => ({
+      id: item.guid || item.link || `${feedDef.name}-${Math.random().toString(36).slice(2, 8)}`,
+      title: item.title || 'Untitled',
+      link: item.link || '#',
+      description: (item.contentSnippet || item.content || '').slice(0, 300),
+      pubDate: item.pubDate || item.isoDate || new Date().toISOString(),
+      source: feedDef.name,
+      image: extractImage(item),
+    }));
+  } catch {
+    return [];
   }
 }
 
