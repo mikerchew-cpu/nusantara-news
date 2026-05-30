@@ -52,6 +52,10 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
         Commodities
       </button>
+      <button class="nav-btn nav-ai" data-view="ai">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        AI News
+      </button>
     </div>
   </nav>
 
@@ -122,6 +126,26 @@
     </div>
     <div class="grid" id="grid"></div>
     <div class="commodities-detail" id="commoditiesDetail" style="display:none"></div>
+    <div class="ai-section" id="aiSection" style="display:none">
+      <div class="ai-header">
+        <div>
+          <h2>AI News Worldwide</h2>
+          <p>Curated from leading global AI publications</p>
+        </div>
+        <select id="aiSourceFilter">
+          <option value="all">All Sources</option>
+        </select>
+      </div>
+      <div class="ai-search">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="aiSearch" placeholder="Search AI news…">
+      </div>
+      <div class="loading" id="aiLoading" style="display:flex">
+        <div class="spinner"></div>
+        <span>Fetching AI news…</span>
+      </div>
+      <div class="grid" id="aiGrid"></div>
+    </div>
   </main>
 
   <!-- ── Analysis Modal ── -->

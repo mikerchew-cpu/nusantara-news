@@ -16,6 +16,11 @@ const modalClose = document.getElementById('modalClose');
 const commodityTicker = document.getElementById('commodityTicker');
 const dieselGrid = document.getElementById('dieselGrid');
 const commoditiesDetail = document.getElementById('commoditiesDetail');
+const aiSection = document.getElementById('aiSection');
+const aiGrid = document.getElementById('aiGrid');
+const aiLoading = document.getElementById('aiLoading');
+const aiSearch = document.getElementById('aiSearch');
+const aiSourceFilter = document.getElementById('aiSourceFilter');
 
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsModal = document.getElementById('settingsModal');
@@ -530,16 +535,32 @@ countryBtns.forEach(btn => {
       grid.style.display = 'none';
       loading.style.display = 'none';
       commoditiesDetail.style.display = 'grid';
+      aiSection.style.display = 'none';
       document.querySelector('.toolbar').style.display = 'none';
       document.querySelector('.ticker-bars').style.display = 'none';
       loadCommoditiesDetail();
       return;
     }
 
-    if (currentView === 'commodities') {
+    if (btn.dataset.view === 'ai') {
+      currentView = 'ai';
+      countryBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      grid.style.display = 'none';
+      loading.style.display = 'none';
+      commoditiesDetail.style.display = 'none';
+      aiSection.style.display = '';
+      document.querySelector('.toolbar').style.display = 'none';
+      document.querySelector('.ticker-bars').style.display = 'none';
+      loadAiNews();
+      return;
+    }
+
+    if (currentView === 'commodities' || currentView === 'ai') {
       currentView = 'news';
       grid.style.display = '';
       commoditiesDetail.style.display = 'none';
+      aiSection.style.display = 'none';
       document.querySelector('.toolbar').style.display = '';
       document.querySelector('.ticker-bars').style.display = '';
     }
@@ -627,6 +648,57 @@ async function loadCommoditiesDetail() {
   }
 }
 
+/* ── AI News ── */
+
+async function loadAiSources() {
+  try {
+    const srcs = await (await fetch('/api/ai-sources')).json();
+    aiSourceFilter.innerHTML = '<option value="all">All Sources</option>' + srcs.map(s => `<option value="${s}">${s}</option>`).join('');
+  } catch {}
+}
+
+async function loadAiNews() {
+  aiLoading.style.display = 'flex';
+  aiGrid.innerHTML = '';
+  try {
+    const params = new URLSearchParams();
+    if (aiSourceFilter.value !== 'all') params.set('source', aiSourceFilter.value);
+    if (aiSearch.value) params.set('q', aiSearch.value);
+    const res = await fetch(`/api/ai-news?${params}`);
+    const data = await res.json();
+    const articles = data.articles;
+    aiLoading.style.display = 'none';
+
+    if (articles.length === 0) {
+      aiGrid.innerHTML = '<div class="loading" style="display:flex;grid-column:1/-1">No AI articles match your filters.</div>';
+      return;
+    }
+
+    aiGrid.innerHTML = articles.map(item => `
+      <div class="card">
+        <div class="card-top">
+          <span class="card-source">${item.source}</span>
+        </div>
+        <span class="card-category">AI</span>
+        <h2 class="card-title">
+          <a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
+        </h2>
+        <p class="card-desc">${item.description || ''}</p>
+        <div class="card-bottom">
+          <span class="card-time">${timeAgo(item.pubDate)}</span>
+          <span style="color:var(--muted-light);font-size:11px">${item.source}</span>
+        </div>
+      </div>
+    `).join('');
+  } catch {
+    aiLoading.style.display = 'none';
+    aiGrid.innerHTML = '<div class="loading" style="display:flex;grid-column:1/-1">Failed to load AI news.</div>';
+  }
+}
+
+aiSourceFilter.addEventListener('change', loadAiNews);
+aiSearch.addEventListener('input', debounce(loadAiNews, 300));
+
 /* ── Filter events ── */
 
 sectionFilter.addEventListener('change', () => {
@@ -641,6 +713,7 @@ refreshBtn.addEventListener('click', () => {
   loadCommodities();
   loadDiesel();
   if (currentView === 'commodities') loadCommoditiesDetail();
+  else if (currentView === 'ai') loadAiNews();
   else load();
 });
 
@@ -665,7 +738,12 @@ function debounce(fn, ms) {
 updateAiStatus();
 refreshProviderDots();
 loadFilters();
+loadAiSources();
 loadCommodities();
 loadDiesel();
 load();
-setInterval(load, 5 * 60 * 1000);
+setInterval(() => {
+  if (currentView === 'commodities') loadCommoditiesDetail();
+  else if (currentView === 'ai') loadAiNews();
+  else load();
+}, 5 * 60 * 1000);

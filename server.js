@@ -30,6 +30,15 @@ const FEEDS = {
   ],
 };
 
+const AI_FEEDS = [
+  { url: 'https://www.technologyreview.com/feed/', name: 'MIT Tech Review' },
+  { url: 'https://techcrunch.com/category/artificial-intelligence/feed/', name: 'TechCrunch AI' },
+  { url: 'https://www.theverge.com/ai-artificial-intelligence/rss/index.xml', name: 'The Verge AI' },
+  { url: 'https://feeds.arstechnica.com/arstechnica/ai', name: 'Ars Technica AI' },
+  { url: 'https://venturebeat.com/category/ai/feed/', name: 'VentureBeat AI' },
+  { url: 'https://blog.google/technology/ai/rss/', name: 'Google AI' },
+];
+
 const CATEGORY_RULES = [
   { cat: 'Politics', test: /\b(politic|umno|pakatan|bn|pn|parliament|election|minister|mca|bersatu|dap|presiden|jokowi|prabowo|demokrasi|golkar|pdi|pilkada|legislative|senate|mpr|dpr|kabinet)\b/i },
   { cat: 'Economy', test: /\b(economy|gdp|inflation|ringgit|rupiah|bnm|bi|opr|suku bunga|trade|export|import|fdi|budget|anggaran|pajak|fiskal|moneter)\b/i },
@@ -140,6 +149,83 @@ app.get('/api/news', async (req, res) => {
   });
 });
 
+let aiCache = { articles: [], lastFetch: null };
+let aiFetchPromise = null;
+
+async function fetchAiNews() {
+  if (aiFetchPromise) return aiFetchPromise;
+
+  aiFetchPromise = (async () => {
+    const all = [];
+    for (const feedDef of AI_FEEDS) {
+      try {
+        const feed = await parser.parseURL(feedDef.url);
+        const items = (feed.items || []).slice(0, 20).map(item => ({
+          id: item.guid || item.link || `${feedDef.name}-${Math.random().toString(36).slice(2, 8)}`,
+          title: item.title || 'Untitled',
+          link: item.link || '#',
+          description: (item.contentSnippet || item.content || '').slice(0, 300),
+          pubDate: item.pubDate || item.isoDate || new Date().toISOString(),
+          source: feedDef.name,
+          image: extractImage(item),
+        }));
+        all.push(...items);
+      } catch {}
+    }
+
+    const seen = new Set();
+    const deduped = [];
+    for (const item of all) {
+      const key = item.title.toLowerCase().slice(0, 80);
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduped.push(item);
+      }
+    }
+
+    deduped.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+    aiCache = { articles: deduped.slice(0, 100), lastFetch: new Date().toISOString() };
+    console.log(`Fetched ${aiCache.articles.length} AI articles`);
+  })();
+
+  try {
+    await aiFetchPromise;
+  } finally {
+    aiFetchPromise = null;
+  }
+}
+
+async function ensureAiCache() {
+  if (aiCache.articles.length === 0) await fetchAiNews();
+}
+
+app.get('/api/ai-news', async (req, res) => {
+  await ensureAiCache();
+  const { source, q } = req.query;
+  let result = aiCache.articles;
+
+  if (source && source !== 'all') result = result.filter(a => a.source === source);
+  if (q) {
+    const query = q.toLowerCase();
+    result = result.filter(a =>
+      a.title.toLowerCase().includes(query) ||
+      a.description.toLowerCase().includes(query)
+    );
+  }
+
+  res.json({
+    articles: result,
+    total: aiCache.articles.length,
+    filtered: result.length,
+    lastFetch: aiCache.lastFetch,
+  });
+});
+
+app.get('/api/ai-sources', async (_, res) => {
+  await ensureAiCache();
+  res.json(AI_FEEDS.map(f => f.name));
+});
+
 app.get('/api/sources', async (_, res) => {
   await ensureCache();
   const out = {};
@@ -235,12 +321,12 @@ app.get('/api/commodities-detail', (_, res) => {
     },
     dieselMY: {
       title: 'Diesel — Malaysia',
-      subtitle: 'DOM (Diesel Outlet Market) prices',
-      ref: 'petrol.my · kpdn.gov.my',
+      subtitle: 'Weekly float pricing — MoF',
+      ref: 'mof.gov.my · ringgitplus.com',
       items: [
-        { grade: 'Diesel (Euro 5 B10)', spec: 'RON 95 equivalent', price: 'RM 2.15', unit: '/litre', change: '—', changePct: 'Fixed' },
-        { grade: 'Diesel (Subsidi B7)', spec: 'Targeted subsidy', price: 'RM 1.88', unit: '/litre', change: '—', changePct: 'Fixed' },
-        { grade: 'Diesel (Non-Subsidy)', spec: 'Market rate', price: 'RM 3.35', unit: '/litre', change: '+0.02', changePct: '+0.60%' },
+        { grade: 'Diesel (Peninsular)', spec: 'B10/B20 float', price: 'RM 4.87', unit: '/litre', change: '-0.10', changePct: '-2.01%', ref: '28 May – 3 Jun 2026' },
+        { grade: 'Diesel (East Malaysia)', spec: 'Sabah/Sarawak/Labuan', price: 'RM 2.15', unit: '/litre', change: '—', changePct: 'Fixed subsidy' },
+        { grade: 'Diesel (BUDI Eligible)', spec: 'Cash assistance RM400/mo', price: 'Up to 87.5L', unit: 'subsidised', change: '—', changePct: 'RM200→RM400 from Apr 2026' },
       ],
     },
     dieselID: {
@@ -261,8 +347,8 @@ app.get('/api/diesel', (req, res) => {
   const country = req.query.country || 'all';
   const data = {
     malaysia: [
-      { fuel: 'Diesel (Euro 5)', price: 'RM 2.15', unit: 'per litre', updated: '30 May 2026' },
-      { fuel: 'Diesel (Subsidi)', price: 'RM 1.88', unit: 'per litre', updated: '30 May 2026' },
+      { fuel: 'Diesel (Peninsular Malaysia)', price: 'RM 4.87', unit: 'per litre', updated: '28 May 2026' },
+      { fuel: 'Diesel (East Malaysia)', price: 'RM 2.15', unit: 'per litre', updated: '28 May 2026' },
     ],
     indonesia: [
       { fuel: 'Solar (Subsidi)', price: 'Rp 6,800', unit: 'per litre', updated: '30 May 2026' },
@@ -446,8 +532,9 @@ app.get('*', async (_, res) => {
 });
 
 async function start() {
-  await fetchAll();
+  await Promise.all([fetchAll(), fetchAiNews()]);
   setInterval(fetchAll, 15 * 60 * 1000);
+  setInterval(fetchAiNews, 15 * 60 * 1000);
   app.listen(PORT, () => console.log(`Nusantara → http://localhost:${PORT}`));
 }
 
