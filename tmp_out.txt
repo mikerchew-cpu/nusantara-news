@@ -299,7 +299,25 @@ app.get('/api/categories', async (_, res) => {
   res.json(cats);
 });
 
+app.get('/api/diesel', (req, res) => {
+  const country = req.query.country || 'all';
+  const data = {
+    malaysia: [
+      { fuel: 'Diesel (Peninsular Malaysia)', price: 'RM 4.87', unit: 'per litre', updated: '28 May 2026' },
+      { fuel: 'Diesel (East Malaysia)', price: 'RM 2.15', unit: 'per litre', updated: '28 May 2026' },
+    ],
+    indonesia: [
+      { fuel: 'Solar (Subsidi)', price: 'Rp 6,800', unit: 'per litre', updated: '30 May 2026' },
+      { fuel: 'Solar (Non-Subsidi/CN)', price: 'Rp 13,400', unit: 'per litre', updated: '30 May 2026' },
+      { fuel: 'Dexlite', price: 'Rp 14,200', unit: 'per litre', updated: '30 May 2026' },
+      { fuel: 'Pertamina Dex', price: 'Rp 15,100', unit: 'per litre', updated: '30 May 2026' },
+    ],
+  };
 
+  if (country === 'all') return res.json(data);
+  if (data[country]) return res.json(data[country]);
+  res.json([]);
+});
 
 const PROVIDERS = {
   deepseek: {
@@ -373,7 +391,7 @@ const BASE_PROMPT = 'You analyse news articles about Malaysia, Indonesia and Sin
 
 app.post('/api/analyze', async (req, res) => {
   const { title, description, provider, apiKey, skill } = req.body || {};
-  const text = [title, description].filter(Boolean).join(' â€” ').slice(0, 1500);
+  const text = [title, description].filter(Boolean).join(' â€?').slice(0, 1500);
   if (!text) return res.status(400).json({ error: 'No text provided' });
   if (!provider) return res.status(400).json({ error: 'No AI provider specified' });
   if (!apiKey) return res.status(400).json({ error: 'No API key provided' });
@@ -474,7 +492,7 @@ async function start() {
   setInterval(fetchAll, 15 * 60 * 1000);
   setInterval(fetchAiNews, 15 * 60 * 1000);
   setInterval(fetchSarawakNews, 15 * 60 * 1000);
-  app.listen(PORT, () => console.log(`Nusantara â†’ http://localhost:${PORT}`));
+  app.listen(PORT, () => console.log(`Nusantara â†?http://localhost:${PORT}`));
 }
 
 if (!process.env.VERCEL) {

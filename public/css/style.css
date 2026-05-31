@@ -51,8 +51,6 @@ body {
   .btn-primary:hover { background: var(--blue); }
   .btn-secondary:hover { border-color: var(--line); color: var(--ink); }
   .btn-analyze:hover { transform: none; box-shadow: none; background: var(--red); }
-  .commodity-item:hover { border-color: var(--line-light); box-shadow: none; }
-  .diesel-item:hover { box-shadow: none; }
   .cd-card:hover { box-shadow: none; border-color: var(--line-light); }
   .cd-table tr:hover td { background: transparent; }
   .ql-btn:hover { border-color: var(--line); color: var(--muted); background: var(--panel); }
@@ -310,100 +308,6 @@ input, select { font-family: inherit; }
   color: #fff;
   border-color: var(--blue);
 }
-
-/* ── Ticker Bars ── */
-
-.ticker-bars {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 14px 28px 4px;
-}
-
-.commodity-bar, .diesel-bar {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 10px;
-}
-
-.bar-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--muted);
-  white-space: nowrap;
-  min-width: 120px;
-}
-
-.commodity-ticker {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 2px;
-  scrollbar-width: none;
-}
-
-.commodity-ticker::-webkit-scrollbar { display: none; }
-
-.commodity-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-  font-size: 13px;
-  padding: 6px 12px;
-  background: var(--panel);
-  border: 1px solid var(--line-light);
-  border-radius: var(--radius-sm);
-  transition: var(--transition);
-  cursor: default;
-}
-
-.commodity-item:hover {
-  border-color: var(--blue);
-  box-shadow: var(--shadow-sm);
-}
-
-.commodity-item .sym {
-  font-weight: 700;
-  color: var(--ink-soft);
-  font-size: 12px;
-}
-
-.commodity-item .pr {
-  color: var(--muted);
-  font-weight: 500;
-}
-
-.commodity-item .ch.up { color: #059669; font-weight: 600; }
-.commodity-item .ch.dn { color: var(--red); font-weight: 600; }
-.commodity-item .ref { color: var(--muted-light); font-size: 11px; cursor: help; }
-
-.diesel-grid {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.diesel-item {
-  font-size: 12px;
-  padding: 5px 12px;
-  background: var(--blue-muted);
-  border-radius: var(--radius-sm);
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  font-weight: 500;
-  transition: var(--transition);
-}
-
-.diesel-item:hover { box-shadow: var(--shadow-sm); }
-.diesel-item .fuel { color: var(--muted); }
-.diesel-item .price { color: var(--blue); font-weight: 700; }
 
 /* ── Buttons ── */
 
@@ -965,14 +869,20 @@ input, select { font-family: inherit; }
   align-self: center;
 }
 
-.nav-commodities, .nav-ai, .nav-usm, .nav-swk {
+.nav-ai, .nav-usm, .nav-swk {
   color: var(--blue) !important;
   font-weight: 700 !important;
 }
 
-.nav-commodities svg, .nav-ai svg, .nav-usm svg, .nav-swk svg { vertical-align: -2px; }
+.nav-ai svg, .nav-usm svg, .nav-swk svg { vertical-align: -2px; }
 
-/* ── Commodities Detail ── */
+/* ── US Markets Section ── */
+
+.usm-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 20px;
+}
 
 .cd-timestamp {
   display: flex;
@@ -989,12 +899,6 @@ input, select { font-family: inherit; }
 }
 
 .cd-timestamp svg { flex-shrink: 0; }
-
-.commodities-detail {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-  gap: 20px;
-}
 
 .cd-card {
   background: var(--panel);
@@ -1119,14 +1023,6 @@ input, select { font-family: inherit; }
   margin-left: 4px;
 }
 
-/* ── US Markets Section ── */
-
-.usm-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-  gap: 20px;
-}
-
 /* ── AI News Section ── */
 
 .ai-section {
@@ -1225,14 +1121,12 @@ input, select { font-family: inherit; }
   .header-inner { padding: 12px 20px; }
   .nav-inner { padding: 0 20px; }
   .toolbar { padding: 14px 20px 0; }
-  .ticker-bars { padding: 12px 20px 4px; }
   .main { padding: 14px 20px 40px; }
 
   .brand-tagline { display: none; }
   .brand-name { font-size: 18px; }
 
   .grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
-  .commodities-detail { grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
 
   .search-wrap input { width: 180px; }
   .search-wrap input:focus { width: 220px; }
@@ -1275,7 +1169,7 @@ input, select { font-family: inherit; }
     min-height: 40px;
     flex-shrink: 0;
   }
-  .nav-commodities, .nav-ai, .nav-usm, .nav-swk { font-size: 11px !important; }
+  .nav-ai, .nav-usm, .nav-swk { font-size: 11px !important; }
   .nav-divider { display: none; }
 
   /* Toolbar — compact */
@@ -1324,19 +1218,6 @@ input, select { font-family: inherit; }
     white-space: nowrap;
   }
 
-  /* Ticker Bars */
-  .ticker-bars { padding: 8px 12px 0; }
-  .commodity-bar, .diesel-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .bar-label { min-width: unset; font-size: 10px; }
-  .commodity-ticker { gap: 8px; padding-bottom: 4px; }
-  .commodity-item { padding: 5px 10px; font-size: 12px; }
-  .diesel-grid { gap: 6px; }
-  .diesel-item { font-size: 11px; padding: 4px 10px; }
-
   /* News Grid — tighter cards */
   .main { padding: 10px 12px 24px; }
   .grid {
@@ -1354,12 +1235,6 @@ input, select { font-family: inherit; }
 
   /* US Markets mobile */
   .usm-section { grid-template-columns: 1fr; gap: 14px; }
-
-  /* Commodities Detail */
-  .commodities-detail {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
   .cd-header { padding: 14px 16px 12px; flex-direction: column; gap: 8px; }
   .cd-header-text h3 { font-size: 15px; }
   .cd-ref { align-self: flex-start; }
@@ -1459,13 +1334,10 @@ input, select { font-family: inherit; }
   body { -webkit-text-size-adjust: 100%; }
 
   /* Smooth scrollable areas */
-  .nav-inner, .toolbar-row.secondary, .quick-links, .commodity-ticker {
+  .nav-inner, .toolbar-row.secondary, .quick-links {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
   }
-
-  /* Ticker items more tappable on mobile */
-  .commodity-item { cursor: default; }
 
   /* Compact nav btn SVGs */
   .nav-btn svg { width: 12px; height: 12px; vertical-align: -1px; }
