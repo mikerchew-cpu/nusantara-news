@@ -377,6 +377,27 @@ app.get('/api/commodities-detail', (_, res) => {
         { grade: 'CPO (FCPO)', spec: 'Bursa Malaysia', price: '4,473', unit: 'MYR/ton', change: '+15', changePct: '+0.34%' },
       ],
     },
+    dieselMY: {
+      title: 'Diesel — Malaysia',
+      subtitle: 'Weekly float pricing — MoF',
+      ref: 'mof.gov.my · ringgitplus.com',
+      items: [
+        { grade: 'Diesel (Peninsular)', spec: 'B10/B20 float', price: 'RM 4.87', unit: '/litre', change: '-0.10', changePct: '-2.01%', ref: '28 May – 3 Jun 2026' },
+        { grade: 'Diesel (East Malaysia)', spec: 'Sabah/Sarawak/Labuan', price: 'RM 2.15', unit: '/litre', change: '—', changePct: 'Fixed subsidy' },
+        { grade: 'Diesel (BUDI Eligible)', spec: 'Cash assistance RM400/mo', price: 'Up to 87.5L', unit: 'subsidised', change: '—', changePct: 'RM200→RM400 from Apr 2026' },
+      ],
+    },
+    dieselID: {
+      title: 'Diesel — Indonesia',
+      subtitle: 'Pertamina pricing — effective May 2026',
+      ref: 'pertamina.com · esdm.go.id',
+      items: [
+        { grade: 'Solar (Subsidi)', spec: 'PSO regulated', price: 'Rp 6,800', unit: '/litre', change: '—', changePct: 'Fixed' },
+        { grade: 'Solar (Non-Subsidi/CN)', spec: 'Non-PSO market', price: 'Rp 13,400', unit: '/litre', change: '+200', changePct: '+1.52%' },
+        { grade: 'Dexlite', spec: 'Low sulfur diesel', price: 'Rp 14,200', unit: '/litre', change: '+150', changePct: '+1.07%' },
+        { grade: 'Pertamina Dex', spec: 'Premium biodiesel', price: 'Rp 15,100', unit: '/litre', change: '+150', changePct: '+1.00%' },
+      ],
+    },
   });
 });
 

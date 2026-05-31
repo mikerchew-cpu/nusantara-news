@@ -599,6 +599,8 @@ async function loadCommoditiesDetail() {
       { key: 'gold', icon: '🥇' },
       { key: 'silver', icon: '🥈' },
       { key: 'energy', icon: '⚡' },
+      { key: 'dieselMY', icon: '⛽' },
+      { key: 'dieselID', icon: '⛽' },
     ];
 
     commoditiesDetail.innerHTML = `
