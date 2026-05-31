@@ -869,12 +869,20 @@ input, select { font-family: inherit; }
   align-self: center;
 }
 
-.nav-ai, .nav-usm, .nav-swk {
+.nav-com, .nav-ai, .nav-usm, .nav-swk {
   color: var(--blue) !important;
   font-weight: 700 !important;
 }
 
-.nav-ai svg, .nav-usm svg, .nav-swk svg { vertical-align: -2px; }
+.nav-com svg, .nav-ai svg, .nav-usm svg, .nav-swk svg { vertical-align: -2px; }
+
+/* ── Commodities Detail ── */
+
+.commodities-detail {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 20px;
+}
 
 /* ── US Markets Section ── */
 
@@ -1127,6 +1135,7 @@ input, select { font-family: inherit; }
   .brand-name { font-size: 18px; }
 
   .grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+  .commodities-detail { grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
 
   .search-wrap input { width: 180px; }
   .search-wrap input:focus { width: 220px; }
@@ -1169,7 +1178,7 @@ input, select { font-family: inherit; }
     min-height: 40px;
     flex-shrink: 0;
   }
-  .nav-ai, .nav-usm, .nav-swk { font-size: 11px !important; }
+  .nav-com, .nav-ai, .nav-usm, .nav-swk { font-size: 11px !important; }
   .nav-divider { display: none; }
 
   /* Toolbar — compact */
@@ -1235,6 +1244,7 @@ input, select { font-family: inherit; }
 
   /* US Markets mobile */
   .usm-section { grid-template-columns: 1fr; gap: 14px; }
+  .commodities-detail { grid-template-columns: 1fr; gap: 14px; }
   .cd-header { padding: 14px 16px 12px; flex-direction: column; gap: 8px; }
   .cd-header-text h3 { font-size: 15px; }
   .cd-ref { align-self: flex-start; }

@@ -299,7 +299,86 @@ app.get('/api/categories', async (_, res) => {
   res.json(cats);
 });
 
+app.get('/api/commodities', (_, res) => {
+  res.json([
+    { name: 'Coal ICI 3 (Argus/Coalindo)', symbol: 'ICI 3', price: '79.07', unit: 'USD/ton', change: '+1.34', changePct: '+1.72%', ref: 'Argus/Coalindo Indonesian Coal Index · 30 Apr 2026' },
+    { name: 'Coal ICI 4 (Argus/Coalindo)', symbol: 'ICI 4', price: '61.82', unit: 'USD/ton', change: '+0.97', changePct: '+1.59%', ref: 'Argus/Coalindo Indonesian Coal Index · 30 Apr 2026' },
+    { name: 'Nickel (LME)', symbol: 'NI', price: '18,955', unit: 'USD/ton', change: '-136', changePct: '-0.71%', ref: 'LME 3-month · 29 May 2026' },
+    { name: 'Tin (LME)', symbol: 'SN', price: '55,079', unit: 'USD/ton', change: '+685', changePct: '+1.26%', ref: 'LME 3-month · 28 May 2026' },
+    { name: 'Brent Crude', symbol: 'BZ', price: '95.47', unit: 'USD/bbl', change: '-1.64', changePct: '-1.69%', ref: 'ICE · 28 May 2026' },
+    { name: 'CPO (FCPO)', symbol: 'FCPO', price: '4,473', unit: 'MYR/ton', change: '+15', changePct: '+0.34%', ref: 'Bursa Malaysia · 26 May 2026' },
+  ]);
+});
 
+app.get('/api/commodities-detail', (_, res) => {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' });
+  res.json({
+    lastUpdated: `${dateStr} · ${timeStr} MYT`,
+    coal: {
+      title: 'Indonesian Coal Index (ICI)',
+      subtitle: 'Argus/Coalindo — FOB Kalimantan',
+      ref: 'argusmedia.com · coalindoenergy.com',
+      items: [
+        { grade: 'ICI 1', spec: 'GAR 6,500 kcal/kg', price: '120.99', unit: 'USD/ton', change: '+1.55', changePct: '+1.30%' },
+        { grade: 'ICI 2', spec: 'GAR 5,800 kcal/kg', price: '92.88', unit: 'USD/ton', change: '+1.21', changePct: '+1.32%' },
+        { grade: 'ICI 3', spec: 'GAR 5,000 kcal/kg', price: '79.07', unit: 'USD/ton', change: '+1.34', changePct: '+1.72%' },
+        { grade: 'ICI 4', spec: 'GAR 4,200 kcal/kg', price: '61.82', unit: 'USD/ton', change: '+0.97', changePct: '+1.59%' },
+        { grade: 'ICI 5', spec: 'GAR 3,400 kcal/kg', price: '37.46', unit: 'USD/ton', change: '+0.57', changePct: '+1.55%' },
+      ],
+    },
+    nickel: {
+      title: 'LME Nickel',
+      subtitle: 'London Metal Exchange — 3-month',
+      ref: 'lme.com',
+      items: [
+        { grade: 'Cash', spec: '99.8% Ni', price: '18,920', unit: 'USD/ton', change: '-145', changePct: '-0.76%' },
+        { grade: '3-Month', spec: '99.8% Ni', price: '18,955', unit: 'USD/ton', change: '-136', changePct: '-0.71%' },
+        { grade: '15-Month', spec: '99.8% Ni', price: '18,850', unit: 'USD/ton', change: '-130', changePct: '-0.68%' },
+      ],
+    },
+    tin: {
+      title: 'LME Tin',
+      subtitle: 'London Metal Exchange',
+      ref: 'lme.com',
+      items: [
+        { grade: 'Cash', spec: '99.85% Sn', price: '55,020', unit: 'USD/ton', change: '+670', changePct: '+1.23%' },
+        { grade: '3-Month', spec: '99.85% Sn', price: '55,079', unit: 'USD/ton', change: '+685', changePct: '+1.26%' },
+        { grade: '15-Month', spec: '99.85% Sn', price: '54,600', unit: 'USD/ton', change: '+640', changePct: '+1.19%' },
+      ],
+    },
+    gold: {
+      title: 'Gold',
+      subtitle: 'LBMA / COMEX',
+      ref: 'lbma.org.uk · kitco.com',
+      items: [
+        { grade: 'Spot Gold', spec: 'XAU/USD', price: '4,539', unit: 'USD/oz', change: '+43', changePct: '+0.96%' },
+        { grade: 'LBMA PM Fix', spec: 'USD/oz', price: '4,526', unit: 'USD/oz', change: '+25', changePct: '+0.56%' },
+        { grade: 'Gold (MYR)', spec: 'XAU/MYR', price: '19,135', unit: 'MYR/oz', change: '+181', changePct: '+0.96%' },
+      ],
+    },
+    silver: {
+      title: 'Silver',
+      subtitle: 'LBMA / COMEX',
+      ref: 'lbma.org.uk · kitco.com',
+      items: [
+        { grade: 'Spot Silver', spec: 'XAG/USD', price: '75.29', unit: 'USD/oz', change: '-0.48', changePct: '-0.63%' },
+        { grade: 'LBMA Fix', spec: 'USD/oz', price: '75.05', unit: 'USD/oz', change: '-0.30', changePct: '-0.40%' },
+        { grade: 'Silver (MYR)', spec: 'XAG/MYR', price: '317', unit: 'MYR/oz', change: '-2', changePct: '-0.63%' },
+      ],
+    },
+    energy: {
+      title: 'Energy',
+      subtitle: 'Global benchmarks',
+      items: [
+        { grade: 'Brent Crude', spec: 'ICE', price: '95.47', unit: 'USD/bbl', change: '-1.64', changePct: '-1.69%' },
+        { grade: 'WTI Crude', spec: 'NYMEX', price: '92.21', unit: 'USD/bbl', change: '-1.58', changePct: '-1.68%' },
+        { grade: 'CPO (FCPO)', spec: 'Bursa Malaysia', price: '4,473', unit: 'MYR/ton', change: '+15', changePct: '+0.34%' },
+      ],
+    },
+  });
+});
 
 const PROVIDERS = {
   deepseek: {

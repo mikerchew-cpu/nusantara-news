@@ -13,6 +13,7 @@ const modalOverlay = document.getElementById('modalOverlay');
 const modalTitle = document.getElementById('modalTitle');
 const modalBody = document.getElementById('modalBody');
 const modalClose = document.getElementById('modalClose');
+const commoditiesDetail = document.getElementById('commoditiesDetail');
 const aiSection = document.getElementById('aiSection');
 const aiGrid = document.getElementById('aiGrid');
 const aiLoading = document.getElementById('aiLoading');
@@ -506,13 +507,30 @@ let currentView = 'news';
 
 countryBtns.forEach(btn => {
   btn.addEventListener('click', () => {
+    if (btn.dataset.view === 'commodities') {
+      currentView = 'commodities';
+      countryBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      grid.style.display = 'none';
+      loading.style.display = 'none';
+      aiSection.style.display = 'none';
+      usmSection.style.display = 'none';
+      sarawakSection.style.display = 'none';
+      commoditiesDetail.style.display = 'grid';
+      document.querySelector('.toolbar').style.display = 'none';
+      loadCommoditiesDetail();
+      return;
+    }
+
     if (btn.dataset.view === 'ai') {
       currentView = 'ai';
       countryBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       grid.style.display = 'none';
       loading.style.display = 'none';
+      commoditiesDetail.style.display = 'none';
       usmSection.style.display = 'none';
+      sarawakSection.style.display = 'none';
       aiSection.style.display = '';
       document.querySelector('.toolbar').style.display = 'none';
       loadAiNews();
@@ -525,6 +543,7 @@ countryBtns.forEach(btn => {
       btn.classList.add('active');
       grid.style.display = 'none';
       loading.style.display = 'none';
+      commoditiesDetail.style.display = 'none';
       aiSection.style.display = 'none';
       sarawakSection.style.display = 'none';
       usmSection.style.display = 'grid';
@@ -539,6 +558,7 @@ countryBtns.forEach(btn => {
       btn.classList.add('active');
       grid.style.display = 'none';
       loading.style.display = 'none';
+      commoditiesDetail.style.display = 'none';
       aiSection.style.display = 'none';
       usmSection.style.display = 'none';
       sarawakSection.style.display = '';
@@ -547,9 +567,10 @@ countryBtns.forEach(btn => {
       return;
     }
 
-    if (currentView === 'ai' || currentView === 'us-markets' || currentView === 'sarawak') {
+    if (currentView === 'commodities' || currentView === 'ai' || currentView === 'us-markets' || currentView === 'sarawak') {
       currentView = 'news';
       grid.style.display = '';
+      commoditiesDetail.style.display = 'none';
       aiSection.style.display = 'none';
       sarawakSection.style.display = 'none';
       document.querySelector('.toolbar').style.display = '';
@@ -564,6 +585,77 @@ countryBtns.forEach(btn => {
     load();
   });
 });
+
+/* ── Load commodities detail ── */
+
+async function loadCommoditiesDetail() {
+  commoditiesDetail.innerHTML = '<div class="loading" style="display:flex;grid-column:1/-1"><div class="spinner"></div> Loading commodities…</div>';
+  try {
+    const data = await (await fetch('/api/commodities-detail')).json();
+    const sections = [
+      { key: 'coal', icon: '⛏' },
+      { key: 'nickel', icon: '🔩' },
+      { key: 'tin', icon: '🔩' },
+      { key: 'gold', icon: '🥇' },
+      { key: 'silver', icon: '🥈' },
+      { key: 'energy', icon: '⚡' },
+    ];
+
+    commoditiesDetail.innerHTML = `
+      <div class="cd-timestamp" style="grid-column:1/-1">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Data fetched: ${data.lastUpdated}
+      </div>
+      ${sections.map(s => {
+      const sec = data[s.key];
+      if (!sec) return '';
+      return `
+        <div class="cd-card">
+          <div class="cd-header">
+            <div class="cd-header-text">
+              <h3>${sec.title}</h3>
+              <p>${sec.subtitle}</p>
+            </div>
+            ${sec.ref ? `<span class="cd-ref">${sec.ref}</span>` : ''}
+          </div>
+          <table class="cd-table">
+            <thead>
+              <tr>
+                <th>Grade</th>
+                <th style="text-align:right">Price</th>
+                <th style="text-align:right">Change</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${sec.items.map(i => {
+                const isUp = i.change.startsWith('+');
+                return `
+                  <tr>
+                    <td>
+                      <span class="cd-grade">${i.grade}</span><br>
+                      <span class="cd-spec">${i.spec}</span>
+                    </td>
+                    <td style="text-align:right">
+                      <span class="cd-price">${i.price}</span>
+                      <span class="cd-unit">${i.unit}</span>
+                    </td>
+                    <td style="text-align:right">
+                      <span class="cd-change ${isUp ? 'up' : 'dn'}">${i.change}</span>
+                      <span class="cd-change-pct">${i.changePct}</span>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }).join('')}
+    `;
+  } catch {
+    commoditiesDetail.innerHTML = '<div class="loading" style="display:flex;grid-column:1/-1">Failed to load commodities data.</div>';
+  }
+}
 
 /* ── AI News ── */
 
@@ -748,7 +840,8 @@ sourceFilter.addEventListener('change', load);
 searchInput.addEventListener('input', debounce(load, 300));
 
 refreshBtn.addEventListener('click', () => {
-  if (currentView === 'ai') loadAiNews();
+  if (currentView === 'commodities') loadCommoditiesDetail();
+  else if (currentView === 'ai') loadAiNews();
   else if (currentView === 'us-markets') loadUsMarkets();
   else if (currentView === 'sarawak') loadSarawakNews();
   else load();
@@ -779,7 +872,8 @@ loadAiSources();
 loadSarawakSources();
 load();
 setInterval(() => {
-  if (currentView === 'ai') loadAiNews();
+  if (currentView === 'commodities') loadCommoditiesDetail();
+  else if (currentView === 'ai') loadAiNews();
   else if (currentView === 'us-markets') loadUsMarkets();
   else if (currentView === 'sarawak') loadSarawakNews();
   else load();
